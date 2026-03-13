@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>買取専門店 諭吉 ｜ 研修テスト</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI','Noto Sans JP','Hiragino Sans',sans-serif}
+body{background:radial-gradient(circle at center,#0f2027,#203a43,#2c5364);overflow-x:hidden;color:white;min-height:100vh}
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(0,245,255,0.3);border-radius:3px}
+
+nav{position:fixed;top:0;width:100%;padding:18px 40px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(12px);background:rgba(0,0,0,0.35);z-index:1000;border-bottom:1px solid rgba(0,245,255,0.1)}
+nav h1{letter-spacing:4px;font-size:18px;background:linear-gradient(90deg,#00f5ff,#0066ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .nav-info{display:flex;align-items:center;gap:24px;font-size:14px}
+.timer-display{font-size:20px;font-weight:bold;letter-spacing:2px;color:#00f5ff;text-shadow:0 0 10px rgba(0,245,255,0.5)}
+.timer-display.warning{color:#f0c040;text-shadow:0 0 10px rgba(240,192,64,0.5)}
+.timer-display.danger{color:#ff5252;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.progress-mini{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.6)}
+.progress-bar-mini{width:120px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.progress-fill-mini{height:100%;background:linear-gradient(90deg,#00f5ff,#0066ff);border-radius:2px;transition:width 0.5s ease}
+
+.container{max-width:860px;margin:0 auto;padding:20px;position:relative;z-index:1}
+.screen{display:none}.screen.active{display:block}
+.glass{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:20px;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+
+.btn{padding:15px 30px;border:none;border-radius:50px;color:white;font-size:16px;cursor:pointer;transition:.3s;font-family:inherit;letter-spacing:1px}
+.btn:hover{transform:scale(1.05)}
+.btn-primary{background:linear-gradient(45deg,#00f5ff,#0066ff);box-shadow:0 4px 20px rgba(0,100,255,0.3)}
+.btn-primary:hover{box-shadow:0 8px 30px rgba(0,100,255,0.5)}
+.btn-ghost{background:rgba(255,255,255,0.08);border:1px solid rgba(0,245,255,0.3);backdrop-filter:blur(10px)}
+.btn-ghost:hover{background:rgba(0,245,255,0.1);border-color:#00f5ff}
+.btn-submit{background:linear-gradient(45deg,#00e676,#00bfa5);box-shadow:0 4px 20px rgba(0,230,118,0.3)}
+.btn-submit:hover{box-shadow:0 8px 30px rgba(0,230,118,0.5)}
+
+.start-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.start-card{text-align:center;padding:60px 48px;max-width:580px;width:100%;animation:floatIn 1s ease}
+@keyframes floatIn{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.start-card .tag{display:inline-block;padding:6px 18px;border:1px solid rgba(0,245,255,0.3);border-radius:50px;font-size:12px;letter-spacing:4px;color:#00f5ff;margin-bottom:24px;text-transform:uppercase}
+.start-card h2{font-size:clamp(32px,7vw,52px);letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 30px rgba(0,245,255,0.2)}
+.start-card .sub{font-size:14px;color:rgba(255,255,255,0.55);margin-bottom:40px;line-height:1.9}
+.meta-row{display:flex;gap:28px;justify-content:center;margin-bottom:40px;flex-wrap:wrap}
+.meta-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.meta-val{font-size:32px;font-weight:bold;background:linear-gradient(135deg,#fff,#00f5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.meta-lbl{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:2px}
+.name-input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:50px;padding:14px 28px;font-size:16px;color:#fff;font-family:inherit;width:100%;max-width:320px;text-align:center;outline:none;transition:.3s;margin-bottom:32px}
+.name-input:focus{border-color:#00f5ff;box-shadow:0 0 20px rgba(0,245,255,0.2)}
+.name-input::placeholder{color:rgba(255,255,255,0.3)}
+
+.quiz-body{padding-top:90px;padding-bottom:40px}
+.category-badge{display:inline-block;padding:6px 16px;background:rgba(0,245,255,0.1);border:1px solid rgba(0,245,255,0.2);color:#00f5ff;border-radius:50px;font-size:13px;margin-bottom:20px;letter-spacing:1px}
+.question-card{padding:36px;margin-bottom:20px;opacity:0;transform:translateY(30px);animation:cardIn 0.5s ease forwards}
+@keyframes cardIn{to{opacity:1;transform:translateY(0)}}
+.q-number{font-size:13px;font-weight:bold;color:#00f5ff;letter-spacing:3px;margin-bottom:12px;text-shadow:0 0 8px rgba(0,245,255,0.3)}
+.q-text{font-size:15px;line-height:2;margin-bottom:24px;color:rgba(255,255,255,0.85)}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice-btn{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;cursor:pointer;transition:.3s;text-align:left;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.8);font-family:inherit}
+.choice-btn:hover{background:rgba(0,245,255,0.06);border-color:rgba(0,245,255,0.25);transform:translateX(4px)}
+.choice-btn.selected{background:rgba(0,245,255,0.1);border-color:#00f5ff;color:#fff;box-shadow:0 0 20px rgba(0,245,255,0.1)}
+.choice-btn .label{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,0.08);font-weight:bold;font-size:13px;flex-shrink:0;margin-top:2px;transition:.3s}
+.choice-btn.selected .label{background:linear-gradient(135deg,#00f5ff,#0066ff);color:#0f2027}
+.q-dots{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:28px 0 20px}
+.q-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.1);cursor:pointer;transition:.3s}
+.q-dot.answered{background:rgba(0,245,255,0.5)}
+.q-dot.current{background:#00f5ff;transform:scale(1.4);box-shadow:0 0 8px rgba(0,245,255,0.5)}
+.quiz-nav{display:flex;justify-content:space-between;align-items:center;padding-bottom:40px;gap:12px}
+.quiz-nav-center{display:flex;gap:10px}
+
+.result-body{padding-top:100px;padding-bottom:60px}
+.result-hero{text-align:center;margin-bottom:48px;animation:floatIn 0.8s ease}
+.score-ring-wrap{width:200px;height:200px;margin:0 auto 20px;position:relative}
+.score-ring-wrap svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.06);stroke-width:8}
+.ring-fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1.5s ease}
+.ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-center .num{font-size:52px;font-weight:bold;display:block;text-shadow:0 0 20px currentColor}
+.ring-center .lbl{font-size:13px;color:rgba(255,255,255,0.4)}
+.verdict{font-size:24px;font-weight:bold;letter-spacing:3px;margin-bottom:6px}
+.verdict-sub{font-size:13px;color:rgba(255,255,255,0.4)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin-bottom:40px}
+.stat-card{padding:24px 16px;text-align:center}
+.stat-card .val{font-size:30px;font-weight:bold;text-shadow:0 0 12px currentColor}
+.stat-card .lbl{font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:1px}
+.cat-section{margin-bottom:40px}.cat-section h3{font-size:16px;margin-bottom:16px;letter-spacing:1px}
+.cat-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.cat-label{min-width:160px;font-size:12px;color:rgba(255,255,255,0.5)}
+.cat-track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden}
+.cat-fill{height:100%;border-radius:4px;transition:width 1.2s ease;box-shadow:0 0 8px currentColor}
+.cat-pct{min-width:42px;text-align:right;font-size:14px;font-weight:bold}
+.review-section h3{font-size:16px;margin-bottom:16px;letter-spacing:1px}
+.filter-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.filter-btn{padding:8px 18px;border-radius:50px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:inherit;transition:.3s}
+.filter-btn.active{background:rgba(0,245,255,0.1);border-color:rgba(0,245,255,0.3);color:#00f5ff}
+.review-card{padding:24px;margin-bottom:14px;border-left:3px solid transparent}
+.review-card.is-correct{border-left-color:#00e676}
+.review-card.is-incorrect{border-left-color:#ff5252}
+.review-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.review-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;flex-shrink:0}
+.review-icon.correct{background:rgba(0,230,118,0.15);color:#00e676}
+.review-icon.incorrect{background:rgba(255,82,82,0.15);color:#ff5252}
+.review-q{font-size:14px;line-height:1.8;color:rgba(255,255,255,0.6);margin-bottom:12px}
+.ans-your{font-size:13px;color:rgba(255,255,255,0.4)}.ans-your.wrong{color:#ff5252}
+.ans-correct{font-size:13px;color:#00e676}
+.explanation-box{margin-top:10px;padding:14px 18px;background:rgba(0,245,255,0.04);border:1px solid rgba(0,245,255,0.08);border-radius:12px;font-size:13px;line-height:1.9;color:rgba(255,255,255,0.5)}
+.result-actions{display:flex;gap:14px;justify-content:center;margin-top:40px;flex-wrap:wrap}
+@media(max-width:600px){nav{padding:14px 16px;flex-wrap:wrap;gap:8px}.start-card{padding:40px 24px}.question-card{padding:24px}.cat-label{min-width:80px;font-size:11px}.progress-bar-mini{width:60px}.nav-info{gap:12px}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<nav id="quizNav" style="display:none">
+  <h1>YUKICHI</h1>
+  <div class="nav-info">
+    <div class="progress-mini">
+      <span id="progressText">1 / 50</span>
+      <div class="progress-bar-mini"><div class="progress-fill-mini" id="progressFill" style="width:2%"></div></div>
+      <span id="answeredCount" style="font-size:12px">回答済 0</span>
+    </div>
+    <div class="timer-display" id="timerDisplay">50:00</div>
+  </div>
+</nav>
+
+<div id="startScreen" class="screen active">
+  <div class="container">
+    <div class="start-wrap">
+      <div class="start-card glass">
+        <div class="tag">YUKICHI TRAINING</div>
+        <h2>買取研修テスト</h2>
+        <p class="sub">買取専門店 諭吉 ― 初級 総合確認テスト（全50問）<br>金額算出・バッグ・ダイヤモンド・時計・日本刀・法令</p>
+        <div class="meta-row">
+          <div class="meta-item"><span class="meta-val">50</span><span class="meta-lbl">QUESTIONS</span></div>
+          <div class="meta-item"><span class="meta-val">50</span><span class="meta-lbl">MINUTES</span></div>
+          <div class="meta-item"><span class="meta-val">100</span><span class="meta-lbl">POINTS</span></div>
+        </div>
+        <input class="name-input" id="nameInput" type="text" placeholder="受検者氏名を入力"><br>
+        <button class="btn btn-primary" id="startBtn">テスト開始</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="quizScreen" class="screen">
+  <div class="container quiz-body">
+    <div id="categoryBadge" class="category-badge"></div>
+    <div id="questionArea"></div>
+    <div class="q-dots" id="qDots"></div>
+    <div class="quiz-nav">
+      <button class="btn btn-ghost" id="prevBtn">← 前へ</button>
+      <button class="btn btn-primary" id="nextBtn">次へ →</button>
+      <button class="btn btn-submit" id="submitBtn" style="display:none">提出する ✓</button>
+    </div>
+  </div>
+</div>
+
+<div id="resultScreen" class="screen">
+  <div class="container result-body" id="resultContent"></div>
+</div>
+
+<script>
+// ===== パーティクル背景 =====
+const canvas=document.getElementById("bg"),ctx=canvas.getContext("2d");
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resizeCanvas();window.addEventListener("resize",resizeCanvas);
+let particles=[];
+for(let i=0;i<120;i++){particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+0.5,dx:(Math.random()-0.5)*0.8,dy:(Math.random()-0.5)*0.8,o:Math.random()*0.5+0.3})}
+function drawParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,245,255,${0.08*(1-d/120)})`;ctx.lineWidth=0.5;ctx.stroke()}}}
+  particles.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,245,255,${p.o})`;ctx.fill();p.x+=p.dx;p.y+=p.dy;if(p.x<0||p.x>canvas.width)p.dx*=-1;if(p.y<0||p.y>canvas.height)p.dy*=-1});
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ===== 全問選択式の問題データ =====
+const questions=[
+// --- 金額算出の基礎／税金・支払調書 Q1-9 ---
+{cat:"金額算出の基礎／税金・支払調書",text:"買取上限金額について、次の説明のうち正しいものを選びなさい。",opts:["上限とは、お客様に提示する「最低買取金額」のことである","上限には「○○％」と「-○○円」の2パターンがある","オークションでの基本的な上限は、落札価格の100％である"],ans:1,ex:"上限には「％指定」と「円引き」の2パターンがあります。"},
+{cat:"金額算出の基礎／税金・支払調書",text:"二次流通における売値（販売価格）の計算式として、最も適切なものを選びなさい。",opts:["販売価格 ＝ 原価 ＋ コスト","販売価格 ＝ 原価 ＋ 利益","販売価格 ＝ 原価 ＋ コスト ＋ 利益"],ans:2,ex:"販売価格は原価＋コスト＋利益で算出します。"},
+{cat:"金額算出の基礎／税金・支払調書",text:"オークション上限の算出：落札価格 50,000円、上限設定 70％ の場合の上限額はいくらか。",opts:["30,000円","35,000円","38,500円","40,000円"],ans:1,ex:"50,000 × 70% ＝ 35,000円"},
+{cat:"金額算出の基礎／税金・支払調書",text:"JCBギフトカード 額面1,000円 × 100枚 × 上限95.5％ の買取総額はいくらか。",opts:["90,000円","95,000円","95,500円","100,000円"],ans:2,ex:"1,000 × 100 × 95.5% ＝ 95,500円"},
+{cat:"金額算出の基礎／税金・支払調書",text:"テレホンカード 50度数 × 10枚、上限1枚250円 の買取総額はいくらか。",opts:["2,000円","2,500円","3,000円","5,000円"],ans:1,ex:"250円 × 10枚 ＝ 2,500円"},
+{cat:"金額算出の基礎／税金・支払調書",text:"「家具・衣服・書籍などの（　）を売却した際の所得は、基本的に課税対象にはならない」— 空欄に入る語句はどれか。",opts:["固定資産","生活動産","流動資産","棚卸資産"],ans:1,ex:"日常生活で使用する動産を「生活動産」と呼び、原則として非課税です。"},
+{cat:"金額算出の基礎／税金・支払調書",text:"金地金等の買取で「支払調書」の提出義務が発生する基準金額はいくらか。",opts:["100万円以上","200万円以上","300万円以上","500万円以上"],ans:1,ex:"金地金等の買取が200万円以上の場合、支払調書の提出義務が生じます。"},
+{cat:"金額算出の基礎／税金・支払調書",text:"次のうち、支払調書の提出義務が発生するケースはどれか。",opts:["インゴット150万円＋金時計50万円（合計200万円）","インゴット190万円＋インゴット10万円（合計200万円）","金時計200万円","金のネックレス150万円＋プラチナリング50万円"],ans:1,ex:"支払調書は「金地金等」に適用。金時計は該当しないため、インゴット合計200万円のケースが正解。"},
+{cat:"金額算出の基礎／税金・支払調書",text:"お客様から「これを売ると税金はいくら？」と聞かれた際の最も適切な対応はどれか。",opts:["「だいたいこれくらいです」と概算を伝える","「税金はかかりません」と断言する","法律上具体的な回答はできない旨を伝え、税務署への確認を促す","「お客様の年収によります」と詳しく聞き出す"],ans:2,ex:"税金の具体的な計算や断言は法律上できません。税務署への確認を促すのが適切です。"},
+
+// --- バッグ基礎知識 Q10-18 ---
+{cat:"バッグ基礎知識",text:"常に高い相場を維持する「高級3大ブランド」の正しい組み合わせはどれか。",opts:["エルメス・シャネル・ルイヴィトン","グッチ・プラダ・コーチ","ルイヴィトン・ディオール・セリーヌ","エルメス・グッチ・バレンシアガ"],ans:0,ex:"エルメス・シャネル・ルイヴィトンが3大ブランドです。"},
+{cat:"バッグ基礎知識",text:"「化粧品や小物を収納する箱型の小型バッグ」の名称はどれか。",opts:["クラッチバッグ","バニティバッグ","トートバッグ","ボストンバッグ"],ans:1,ex:"バニティバッグは化粧品などを入れる箱型の小型バッグです。"},
+{cat:"バッグ基礎知識",text:"表面に特徴的な3つの毛穴が見え、内装にも多用される革素材はどれか。",opts:["牛革（カーフ）","羊革（ラム）","豚革（ピッグスキン）","山羊革（ゴート）"],ans:2,ex:"豚革（ピッグスキン）は3つの毛穴が特徴的です。"},
+{cat:"バッグ基礎知識",text:"バッグの革の切断面（断面）に塗られる塗料や処理を何と呼ぶか。",opts:["マチ","バニッシュ（コバ）","ライニング","パイピング"],ans:1,ex:"革の切断面の処理を「バニッシュ」または「コバ」と呼びます。"},
+{cat:"バッグ基礎知識",text:"本体に取り付けて斜め掛けにできるヒモ状の部品の名称はどれか。",opts:["ハンドル","ショルダーストラップ","チェーン","ドローストリング"],ans:1,ex:"斜め掛け用のヒモ状部品は「ショルダーストラップ」です。"},
+{cat:"バッグ基礎知識",text:"バッグの状態確認5項目：①表面の傷・汚れ ②角スレ ③ハンドルの劣化 ④（？） ⑤付属品。④に入るものはどれか。",opts:["ブランドロゴの状態","内側の劣化・汚れ","金具の動作","ファスナーの状態"],ans:1,ex:"4番目は「内側の劣化・汚れ」です。"},
+{cat:"バッグ基礎知識",text:"バッグ査定で金額への影響度が最も高いダメージ箇所はどこか。",opts:["角のスレ","内側の汚れ","ハンドル（持ち手）のダメージ","金具の傷"],ans:2,ex:"ハンドルのダメージは最も目立ち、金額への影響が最大です。"},
+{cat:"バッグ基礎知識",text:"「使用感は強いが使用には問題ない。角に擦り傷、ハンドルに痛みあり」— この状態ランクはどれか。",opts:["Sランク","Aランク","BCランク（またはC）","Dランク"],ans:2,ex:"使用感が強いがまだ使用可能な状態はBC〜Cランクです。"},
+{cat:"バッグ基礎知識",text:"真贋判定の初期確認として不適切なものはどれか。",opts:["縫製の均一性やステッチの間隔","金具の重量感やメッキの処理","お客様の見た目や雰囲気だけで判断する","素材の質感や匂いを確認する"],ans:2,ex:"お客様の見た目で判断するのは不適切です。"},
+
+// --- ダイヤモンド基礎 Q19-30 ---
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"内包物について：「結晶状で、形成時に取り込まれた別の鉱物」はどれか。",opts:["クラウド","フェザー","カーボン","クリスタル"],ans:3,ex:"クリスタルは結晶状の内包物で、別の鉱物が取り込まれたものです。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"内包物について：「黒い塊状で、目立ちやすく評価が下がりやすい」ものはどれか。",opts:["クリスタル","フェザー","カーボン","クラウド"],ans:2,ex:"カーボンは黒い塊状の内包物で、目立ちやすいです。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"内包物について：「羽のような形状のヒビで、光の反射で白く見える」ものはどれか。",opts:["カーボン","クリスタル","フェザー","クラウド"],ans:2,ex:"フェザーは羽状のヒビで、光の反射で白く見えます。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"指輪の内側に「0366」という刻印がある場合、ダイヤモンドは何カラットか。",opts:["3.66ct","36.6ct","0.366ct","0.0366ct"],ans:2,ex:"刻印0366 → 0.366ctです。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"価格が大きく跳ね上がる「閾値」として特に重要なカラット数はどれか。",opts:["0.50ct","0.99ct","1.00ct","1.50ct"],ans:2,ex:"1.00ctは心理的・市場的に大きな閾値です。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"カラーグレードで最高品質「無色透明」を表すのはどれか。",opts:["Aグレード","Dグレード","Sグレード","Zグレード"],ans:1,ex:"Dグレードが最高品質（無色透明）です。"},
+{cat:"AI活用・リテラシー",text:"AIが事実でない情報をもっともらしく生成してしまう現象を何と呼ぶか。",opts:["ディープフェイク","ハルシネーション","フィッシング","バイアス"],ans:1,ex:"AIが自信ありげに嘘の情報を生成する現象を「ハルシネーション（幻覚）」と呼びます。AIの回答を鵜呑みにせず、必ず事実確認を行うことが重要です。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"クラリティのグレード順として、品質が高い順に正しく並んでいるものはどれか。",opts:["VVS1 ＞ VS1 ＞ SI1 ＞ I1","VS1 ＞ VVS1 ＞ SI1 ＞ I1","FL ＞ I1 ＞ SI1 ＞ VS1","SI1 ＞ VS1 ＞ VVS1 ＞ FL"],ans:0,ex:"VVS1 > VS1 > SI1 > I1 の順です。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"「カラット（ct）」の正しい換算はどれか。",opts:["1ct ＝ 0.1g","1ct ＝ 0.2g","1ct ＝ 0.5g","1ct ＝ 1.0g"],ans:1,ex:"1カラット ＝ 0.2グラムです。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"10倍ルーペでの内包物確認の境界線となるクラリティグレードはどれか。",opts:["VVSクラス","VSクラス（VS1〜VS2）","SIクラス","Iクラス（I1〜I3）"],ans:1,ex:"VSクラスが実務的な境界線です。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"カット（Cut）評価が適用されるダイヤモンドの形状はどれか。",opts:["すべての形状","ラウンドブリリアントカット","エメラルドカット","オーバルカット"],ans:1,ex:"カットグレード評価はラウンドブリリアントカットのみに適用されます。"},
+{cat:"ダイヤモンド基礎（4C評価・実務）",text:"パビリオンが深すぎて中心が黒く見える現象を何と呼ぶか。",opts:["フィッシュアイ","ダークセンター","ハート＆キューピッド","ボウタイ効果"],ans:1,ex:"ダークセンターはパビリオンが深すぎる場合に発生します。"},
+
+// --- 時計基礎／写真撮影基礎 Q31-40 ---
+{cat:"時計基礎／写真撮影基礎",text:"「世界三大時計」に含まれないブランドはどれか。",opts:["パテック フィリップ","オーデマ ピゲ","ロレックス","ヴァシュロン・コンスタンタン"],ans:2,ex:"世界三大時計はパテック フィリップ、オーデマ ピゲ、ヴァシュロン・コンスタンタン。ロレックスは含まれません。"},
+{cat:"時計基礎／写真撮影基礎",text:"「ケース側面の突起部分で、手動巻き上げや時刻調整を行う操作ボタン」の名称はどれか。",opts:["ベゼル","リューズ","ラグ","プッシャー"],ans:1,ex:"リューズ（竜頭）です。"},
+{cat:"時計基礎／写真撮影基礎",text:"ケースとベルトを接続する突起部分の名称はどれか。",opts:["ベゼル","ラグ","バックル","インデックス"],ans:1,ex:"ラグはケースとベルトを接続する突起部分です。"},
+{cat:"時計基礎／写真撮影基礎",text:"左右に膨らみを持つ「樽型」のケース形状を何と呼ぶか。",opts:["ラウンド","トノー","レクタンギュラー","オクタゴン"],ans:1,ex:"トノーは樽型のケース形状です。"},
+{cat:"時計基礎／写真撮影基礎",text:"高額時計で査定額に3〜30万円の影響を与える付属品はどれか。",opts:["外箱","取扱説明書","ギャランティ（保証書）","コマ調整キット"],ans:2,ex:"ギャランティ（保証書）は査定額に大きく影響します。"},
+{cat:"時計基礎／写真撮影基礎",text:"時計の状態確認5項目として正しい組み合わせはどれか。",opts:["ケース、ガラス、リューズ、ベルト、重量","ケース/ガラス、文字盤/針、リューズ/クロノ、ベルト/バックル、付属品","ケース、ベゼル、リューズ、日差、付属品","ガラス、文字盤、針、ベルト、箱"],ans:1,ex:"正しい5項目はケース/ガラス、文字盤/針、リューズ/クロノ、ベルト/バックル、付属品です。"},
+{cat:"時計基礎／写真撮影基礎",text:"状態ランク「S」の定義として正しいものはどれか。",opts:["新品同様だが付属品が欠品","新品未使用でシール付き・付属品完備","使用感はあるが目立つ傷がない","展示品で微細な傷あり"],ans:1,ex:"Sランクは新品未使用・シール付き・付属品完備です。"},
+{cat:"時計基礎／写真撮影基礎",text:"写真撮影で必須カットに含まれないものはどれか。",opts:["全体（表裏・側面・底）","ブランドロゴ／刻印","スタッフの自撮り","シリアル／型番"],ans:2,ex:"スタッフの自撮りは不要です。"},
+{cat:"時計基礎／写真撮影基礎",text:"機械式時計の動力源として正しいものはどれか。",opts:["電池","ゼンマイ","ソーラーパネル","水晶振動子"],ans:1,ex:"機械式時計の動力源はゼンマイです。"},
+{cat:"時計基礎／写真撮影基礎",text:"良い写真の条件として誤っているものはどれか。",opts:["自然光または均一照明を使用し影を避ける","刻印・角・金具にピントを合わせる","背景はごちゃごちゃした場所を選び生活感を出す","商品を清潔な布の上に置く"],ans:2,ex:"背景はシンプルで清潔であるべきです。"},
+
+// --- 日本刀基礎／総合問題 Q41-50 ---
+{cat:"日本刀基礎／総合問題",text:"刃長60cm以上の日本刀の分類名はどれか。",opts:["脇差","短刀","太刀・打刀","薙刀"],ans:2,ex:"刃長60cm以上は太刀・打刀に分類されます。"},
+{cat:"日本刀基礎／総合問題",text:"「脇差」の正しい刃渡り範囲はどれか。",opts:["13cm未満","30cm以上 60cm未満","60cm以上","15cm以上 30cm未満"],ans:1,ex:"脇差は30cm以上60cm未満です。"},
+{cat:"日本刀基礎／総合問題",text:"日本刀の所持に必要な法的書類の正式名称はどれか。",opts:["古物商許可証","銃砲刀剣類登録証","美術品鑑定書","刀剣所持許可証"],ans:1,ex:"正式名称は「銃砲刀剣類登録証」です。"},
+{cat:"日本刀基礎／総合問題",text:"登録証と現物の照合で確認すべき項目として誤っているものはどれか。",opts:["刀の長さ・反り","目釘穴の個数","購入時の領収書","銘の確認"],ans:2,ex:"領収書は照合項目ではありません。"},
+{cat:"日本刀基礎／総合問題",text:"「刀身と鍔の接する部分にはめる筒状の金具」の名称はどれか。",opts:["鍔（つば）","鎺（ハバキ）","目貫（めぬき）","縁（ふち）"],ans:1,ex:"鎺（ハバキ）は刀身と鍔の間にはめる筒状の金具です。"},
+{cat:"日本刀基礎／総合問題",text:"鑑定書と登録証の関係について正しい記述はどれか。",opts:["鑑定書があれば登録証は不要","登録証と鑑定書は別物であり、所持には登録証が必須","登録証は美術的価値を保証するもの","鑑定書は警察が発行する"],ans:1,ex:"登録証と鑑定書は別物。所持には登録証が必須です。"},
+{cat:"日本刀基礎／総合問題",text:"「悪い写真の例」として不適切なもの（＝良い写真）はどれか。",opts:["逆光で被写体が暗い","自然光を活用し影を避けている","手ブレやピントのズレがある","背景が散らかっている"],ans:1,ex:"自然光活用・影回避は良い写真の例です。"},
+{cat:"日本刀基礎／総合問題",text:"LINE査定でダイヤモンド撮影に重要な背景色はどれか。",opts:["黒","白","グレー","青"],ans:1,ex:"ダイヤモンドの撮影では白い背景が重要です。"},
+{cat:"日本刀基礎／総合問題",text:"お客様から税金の具体的な質問を受けた際の正しい対応はどれか。",opts:["知っている範囲で計算してあげる","「税務署に聞いてください」と冷たく突き放す","具体的な回答は法律上できない旨を伝え、税務署への確認を丁寧に促す","「非課税です」と安心させる"],ans:2,ex:"丁寧に税務署への確認を促すのが正しい対応です。"},
+{cat:"日本刀基礎／総合問題",text:"査定士として最も重要な姿勢はどれか。",opts:["自分の経験だけで即断即決する","独断せず、迷ったらエスカレーションする","お客様の要望にすべて応じる","相場より高く買い取り信頼を得る"],ans:1,ex:"独断せずエスカレーションする姿勢が、査定士として最も重要です。"}
+];
+
+// ===== STATE =====
+let currentQ=0, answers={}, timerID=null, timeLeft=50*60, shuffledOrder=[], userName="";
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+// ===== EVENT LISTENERS (one-time setup) =====
+document.getElementById("startBtn").addEventListener("click", startQuiz);
+document.getElementById("prevBtn").addEventListener("click", function(){ navigate(-1) });
+document.getElementById("nextBtn").addEventListener("click", function(){ navigate(1) });
+document.getElementById("submitBtn").addEventListener("click", function(){
+  var unanswered = questions.length - Object.keys(answers).length;
+  var msg = unanswered > 0 ? "未回答が "+unanswered+" 問あります。提出しますか？" : "テストを提出しますか？";
+  if(confirm(msg)){ finishQuiz(); }
+});
+
+// ===== FUNCTIONS =====
+function startQuiz(){
+  userName=document.getElementById("nameInput").value.trim()||"受検者";
+  shuffledOrder=shuffle([...Array(questions.length).keys()]);
+  answers={};currentQ=0;timeLeft=50*60;
+  showScreen("quizScreen");
+  document.getElementById("quizNav").style.display="flex";
+  buildDots();renderQuestion();startTimer();
+}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active")});
+  document.getElementById(id).classList.add("active");
+}
+
+function startTimer(){
+  clearInterval(timerID);updateTimerDisplay();
+  timerID=setInterval(function(){
+    timeLeft--;
+    if(timeLeft<=0){clearInterval(timerID);finishQuiz();return}
+    updateTimerDisplay();
+  },1000);
+}
+
+function updateTimerDisplay(){
+  var m=Math.floor(timeLeft/60),s=timeLeft%60;
+  var el=document.getElementById("timerDisplay");
+  el.textContent=(m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+  el.className="timer-display"+(timeLeft<120?" danger":timeLeft<300?" warning":"");
+}
+
+function buildDots(){
+  var d=document.getElementById("qDots");d.innerHTML="";
+  for(var i=0;i<questions.length;i++){
+    (function(idx){
+      var dot=document.createElement("div");
+      dot.className="q-dot"+(idx===0?" current":"");
+      dot.addEventListener("click",function(){currentQ=idx;renderQuestion()});
+      d.appendChild(dot);
+    })(i);
+  }
+}
+
+function updateDots(){
+  var dots=document.querySelectorAll(".q-dot");
+  for(var i=0;i<dots.length;i++){
+    dots[i].className="q-dot";
+    if(i===currentQ) dots[i].className+=" current";
+    var qi=shuffledOrder[i];
+    if(answers[qi]!==undefined) dots[i].className+=" answered";
+  }
+}
+
+function renderQuestion(){
+  var qi=shuffledOrder[currentQ], q=questions[qi];
+  var area=document.getElementById("questionArea");
+  document.getElementById("categoryBadge").textContent=q.cat;
+  document.getElementById("progressText").textContent=(currentQ+1)+" / "+questions.length;
+  document.getElementById("progressFill").style.width=((currentQ+1)/questions.length*100)+"%";
+  document.getElementById("answeredCount").textContent="回答済 "+Object.keys(answers).length;
+
+  var labels=["A","B","C","D"];
+  var h='<div class="question-card glass"><div class="q-number">Q'+(currentQ+1)+'</div>';
+  h+='<div class="q-text">'+q.text.replace(/\n/g,"<br>")+'</div>';
+  h+='<div class="choices">';
+  for(var i=0;i<q.opts.length;i++){
+    var sel=(answers[qi]===i)?" selected":"";
+    h+='<button class="choice-btn'+sel+'" data-qi="'+qi+'" data-val="'+i+'">';
+    h+='<span class="label">'+labels[i]+'</span><span>'+q.opts[i]+'</span></button>';
+  }
+  h+='</div></div>';
+  area.innerHTML=h;
+
+  // Attach click events to choices
+  var btns=area.querySelectorAll(".choice-btn");
+  for(var j=0;j<btns.length;j++){
+    btns[j].addEventListener("click",function(){
+      var qIdx=parseInt(this.getAttribute("data-qi"));
+      var val=parseInt(this.getAttribute("data-val"));
+      answers[qIdx]=val;
+      renderQuestion();
+    });
+  }
+
+  // Show/hide nav buttons
+  document.getElementById("prevBtn").style.visibility=currentQ===0?"hidden":"visible";
+  var isLast=currentQ===questions.length-1;
+  document.getElementById("nextBtn").style.display=isLast?"none":"inline-block";
+  document.getElementById("submitBtn").style.display=isLast?"inline-block":"none";
+
+  updateDots();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function navigate(dir){
+  var next=currentQ+dir;
+  if(next<0||next>=questions.length) return;
+  currentQ=next;
+  renderQuestion();
+}
+
+function finishQuiz(){
+  clearInterval(timerID);
+  document.getElementById("quizNav").style.display="none";
+  showScreen("resultScreen");
+  renderResults();
+}
+
+function renderResults(){
+  var elapsed=3000-timeLeft, em=Math.floor(elapsed/60), es=elapsed%60;
+  var cc=0, catStats={};
+  var displayResults=[];
+
+  for(var i=0;i<questions.length;i++){
+    var qi=shuffledOrder[i];
+    var q=questions[qi];
+    var userAns=answers[qi];
+    var ok=(userAns===q.ans);
+    if(ok) cc++;
+    displayResults.push({q:q, qi:qi, ok:ok, userAns:userAns, num:i+1});
+    if(!catStats[q.cat]) catStats[q.cat]={t:0,c:0};
+    catStats[q.cat].t++;
+    if(ok) catStats[q.cat].c++;
+  }
+
+  var score=cc*2, pct=Math.round(cc/questions.length*100), passed=score>=80;
+  var circ=2*Math.PI*76, offset=circ-(pct/100)*circ;
+  var col=passed?"#00e676":pct>=50?"#f0c040":"#ff5252";
+  var labels=["A","B","C","D"];
+
+  var h='<div class="result-hero">';
+  h+='<div style="display:inline-block;padding:6px 18px;border:1px solid rgba(0,245,255,0.3);border-radius:50px;font-size:12px;letter-spacing:4px;color:#00f5ff;margin-bottom:20px">'+userName+'</div>';
+  h+='<div class="score-ring-wrap"><svg width="200" height="200" viewBox="0 0 200 200"><circle class="ring-bg" cx="100" cy="100" r="76"/><circle class="ring-fill" cx="100" cy="100" r="76" stroke="'+col+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+offset+'"/></svg>';
+  h+='<div class="ring-center"><span class="num" style="color:'+col+'">'+score+'</span><span class="lbl">/ 100点</span></div></div>';
+  h+='<div class="verdict" style="color:'+col+';text-shadow:0 0 20px '+col+'">'+(passed?"合格":"不合格")+'</div>';
+  h+='<div class="verdict-sub">合格ライン：80点以上（40問正解）</div></div>';
+
+  h+='<div class="stats-grid">';
+  h+='<div class="stat-card glass"><div class="val" style="color:#00e676">'+cc+'</div><div class="lbl">正解</div></div>';
+  h+='<div class="stat-card glass"><div class="val" style="color:#ff5252">'+(questions.length-cc)+'</div><div class="lbl">不正解</div></div>';
+  h+='<div class="stat-card glass"><div class="val" style="color:#00f5ff">'+pct+'%</div><div class="lbl">正答率</div></div>';
+  h+='<div class="stat-card glass"><div class="val" style="color:#fff">'+em+':'+(es<10?"0":"")+es+'</div><div class="lbl">所要時間</div></div>';
+  h+='</div>';
+
+  h+='<div class="cat-section"><h3>カテゴリ別正答率</h3>';
+  for(var cat in catStats){
+    var s=catStats[cat], cp=Math.round(s.c/s.t*100);
+    var bc=cp>=80?"#00e676":cp>=50?"#f0c040":"#ff5252";
+    h+='<div class="cat-row"><div class="cat-label">'+cat+'</div><div class="cat-track"><div class="cat-fill" style="width:'+cp+'%;background:'+bc+';color:'+bc+'"></div></div><div class="cat-pct" style="color:'+bc+'">'+cp+'%</div></div>';
+  }
+  h+='</div>';
+
+  h+='<div class="review-section"><h3>問題別レビュー</h3>';
+  h+='<div class="filter-bar"><button class="filter-btn active" data-filter="all">すべて</button><button class="filter-btn" data-filter="incorrect">不正解のみ</button><button class="filter-btn" data-filter="correct">正解のみ</button></div>';
+  h+='<div id="reviewCards">';
+  for(var k=0;k<displayResults.length;k++){
+    var r=displayResults[k];
+    var ic=r.ok?"correct":"incorrect";
+    var userLabel=(r.userAns!==undefined)?labels[r.userAns]+"．"+r.q.opts[r.userAns]:"（未回答）";
+    var correctLabel=labels[r.q.ans]+"．"+r.q.opts[r.q.ans];
+    h+='<div class="review-card glass is-'+ic+'" data-result="'+ic+'">';
+    h+='<div class="review-head"><div class="review-icon '+ic+'">'+(r.ok?"✓":"✗")+'</div><strong>Q'+r.num+'</strong><span style="color:rgba(255,255,255,0.3);font-size:12px">'+r.q.cat+'</span></div>';
+    h+='<div class="review-q">'+r.q.text.replace(/\n/g,"<br>")+'</div>';
+    h+='<div style="font-size:13px"><div class="ans-your'+(r.ok?"":" wrong")+'">あなたの回答：'+userLabel+'</div>';
+    if(!r.ok) h+='<div class="ans-correct">正解：'+correctLabel+'</div>';
+    h+='</div>';
+    h+='<div class="explanation-box">'+r.q.ex+'</div></div>';
+  }
+  h+='</div></div>';
+  h+='<div class="result-actions"><button class="btn btn-primary" id="retryBtn">もう一度挑戦</button></div>';
+
+  document.getElementById("resultContent").innerHTML=h;
+
+  // Attach filter events
+  var filterBtns=document.querySelectorAll(".filter-btn");
+  for(var f=0;f<filterBtns.length;f++){
+    filterBtns[f].addEventListener("click",function(){
+      for(var x=0;x<filterBtns.length;x++) filterBtns[x].classList.remove("active");
+      this.classList.add("active");
+      var type=this.getAttribute("data-filter");
+      var cards=document.querySelectorAll(".review-card");
+      for(var c=0;c<cards.length;c++){
+        cards[c].style.display=(type==="all"||cards[c].getAttribute("data-result")===type)?"":"none";
+      }
+    });
+  }
+
+  // Retry button
+  document.getElementById("retryBtn").addEventListener("click",function(){
+    showScreen("startScreen");
+    document.getElementById("nameInput").value=userName;
+  });
+
+  window.scrollTo({top:0});
+}
+</script>
+</body>
+</html>
